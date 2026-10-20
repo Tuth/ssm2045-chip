@@ -115,22 +115,22 @@ void testQAndOscillation() {
     ssm2045::Filter quiet(cfg);
     quiet.setQCurrent(0.0);
     quiet.setCutoffHz(1000.0);
+    quiet.seed(1e-6);
     double quietPeak = 0.0;
     for (int n = 0; n < 96000; ++n) {
-        const double in = n == 0 ? 1e-3 : 0.0;
-        quietPeak = std::max(quietPeak, std::abs(quiet.process(in).fourPole));
+        quietPeak = std::max(quietPeak, std::abs(quiet.process(0.0).fourPole));
     }
-    require(quietPeak < 1e-4, "zero Q current is stable");
+    require(quietPeak < 1e-5, "zero Q current is stable");
 
     auto oscCfg = filterConfig();
     ssm2045::Filter osc(oscCfg);
     osc.setQCurrent(180e-6);
     osc.setCutoffHz(1000.0);
+    osc.seed(1e-3);
     std::vector<double> tail;
     double peak = 0.0;
     for (int n = 0; n < int(0.6 * 192000.0); ++n) {
-        const double in = n == 0 ? 1e-3 : 0.0;
-        const double y = osc.process(in).fourPole;
+        const double y = osc.process(0.0).fourPole;
         peak = std::max(peak, std::abs(y));
         if (n > int(0.4 * 192000.0)) tail.push_back(y);
     }
@@ -144,10 +144,10 @@ void testQAndOscillation() {
     ssm2045::Filter hot(hotCfg);
     hot.setQCurrent(1e-3);
     hot.setCutoffHz(1000.0);
+    hot.seed(1e-3);
     double hotPeak = 0.0;
     for (int n = 0; n < 48000; ++n) {
-        const double in = n == 0 ? 1e-3 : 0.0;
-        hotPeak = std::max(hotPeak, std::abs(hot.process(in).fourPole));
+        hotPeak = std::max(hotPeak, std::abs(hot.process(0.0).fourPole));
     }
     require(std::isfinite(hotPeak) && hotPeak <= 0.71, "high Q current remains bounded");
 }
@@ -253,6 +253,7 @@ void testValidation() {
     rejects([&] { f.setCutoffHz(0.49 * f.sampleRate()); }, "cutoff at Nyquist");
     rejects([&] { f.setQCurrent(-1.0); }, "negative Q current");
     rejects([&] { f.setFcPinVolts(std::numeric_limits<double>::quiet_NaN()); }, "NaN FC");
+    rejects([&] { f.seed(std::numeric_limits<double>::quiet_NaN()); }, "NaN seed");
     rejects([&] { f.process(std::numeric_limits<double>::quiet_NaN()); }, "NaN input");
     rejects([&] { f.setSampleRate(-1.0); }, "negative sample rate");
 

@@ -123,6 +123,16 @@ void Filter::reset() {
     deriv(x_, 0.0, gm, aq, f_);
 }
 
+void Filter::seed(double amplitude) {
+    if (!std::isfinite(amplitude))
+        throw std::invalid_argument("SSM2045: non-finite seed amplitude");
+    x_[1] += amplitude;
+    x_[3] += 0.5 * amplitude;
+    const double gm = gmNow();
+    const double aq = qCurrent_ / config_.qOscillationCurrent;
+    deriv(x_, 0.0, gm, aq, f_);
+}
+
 void Filter::setSampleRate(double sampleRate) {
     if (!std::isfinite(sampleRate) || sampleRate <= 0.0)
         throw std::invalid_argument("SSM2045: sample rate must be positive");

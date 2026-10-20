@@ -73,6 +73,10 @@ public:
     explicit Filter(const FilterConfig& config = {});
 
     void reset();
+    // Perturbs the integrator state so a Q current above onset can start
+    // oscillating. The real chip starts from device noise; a deterministic
+    // model at exactly zero would stay at the unstable equilibrium.
+    void seed(double amplitude = 1e-3);
     void setSampleRate(double sampleRate);
     double sampleRate() const { return config_.sampleRate; }
 
@@ -166,6 +170,7 @@ public:
 
     void reset();
     void setSampleRate(double sampleRate);
+    void seed(double amplitude = 1e-3) { filter_.seed(amplitude); }
 
     void setFcPinVolts(double volts) { filter_.setFcPinVolts(volts); }
     void setFcPinVoltsImmediate(double volts) { filter_.setFcPinVoltsImmediate(volts); }

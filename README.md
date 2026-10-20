@@ -49,6 +49,7 @@ is a convenience that advances both blocks in the same sample.
 | `Filter(FilterConfig)` | Construct; validates all parameters |
 | `setSampleRate(hz)` | Sets the rate and resets the state |
 | `reset()` | Clears the four integrator states; snaps FC smoothing |
+| `seed(amplitude=1e-3)` | Perturbs the state so Q>onset can start oscillating |
 | `setCutoffHz(hz)` | Inverts the expo law; throws if the second section is at Nyquist |
 | `setFcPinVolts(v)` | Sets the pin-5 control voltage with optional smoothing |
 | `setFcPinVoltsImmediate(v)` | No smoothing (tests/offline) |
@@ -82,7 +83,12 @@ about −59 dB.
 
 `Chip(FilterConfig, VcaConfig)`; forwards the filter/VCA setters; `process`
 returns `{filter, vca}`; `filter()`/`vca()` expose the sub-blocks. A
-`Chip::reset()` resets the filter (the VCA is memoryless).
+`Chip::reset()` resets the filter (the VCA is memoryless). `Chip::seed()`
+forwards to the filter for the self-oscillation case.
+
+For the host-side wiring, voice lifecycle, threading and audio-callback
+patterns, read [INTEGRATION.md](INTEGRATION.md); the equations and parameter
+provenance are in [docs/MODEL.md](docs/MODEL.md).
 
 ## Build
 
@@ -189,7 +195,11 @@ src/chip.cpp                filter, VCA/mixer, chip
 tests/chip_tests.cpp        self-contained test suite
 examples/render.cpp         filter CSV (sine/impulse)
 examples/chip_demo.cpp      full VCF+VCA CSV demo
+docs/MODEL.md               equations, method and parameter provenance
+INTEGRATION.md              host/voice/audio-callback integration guide
+CHANGELOG.md                version notes
 CMakeLists.txt
+Makefile, build.bat         convenience builds
 VALIDATION.md
 LICENSE                     MIT
 ```
